@@ -16,6 +16,7 @@ keep_similar_surface_forms: Ensure specific paraphrased surface forms are presen
 metadata_fields_present: Ensure all required metadata fields are present in each entry.
 metadata_types_and_values: Ensure metadata fields have correct types and valid values. 
 semantic_clustering: Ensure semantic clustering reveals healthy paraphrase groups.
+category_variance: Ensure categories have sufficient representation.
 """
 
 def test_no_exact_duplicates():
@@ -113,3 +114,15 @@ def test_query_clusters():
     # This checks for at least SOME clusters > 2 members, not just singletons
     assert any(size > 2 for size in cluster_sizes.values()), f"No clusters have healthy paraphrase groups: {cluster_sizes}"
     print(f"Cluster sizes: {cluster_sizes}")
+
+# --- Category variance test ---
+def test_category_variance():
+    from safeEd_ML.data_loader import load_dataset
+    data = load_dataset()
+    categories = [q.get('category', 'unknown') for q in data]
+    from collections import Counter
+    cat_counts = Counter(categories)
+    print("Category counts:", cat_counts)
+    # Alert if any category has fewer than 5 queries
+    for cat, count in cat_counts.items():
+        assert count >= 5, f"Category '{cat}' underrepresented ({count} entries)"
